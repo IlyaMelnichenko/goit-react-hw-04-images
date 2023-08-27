@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {useEffect, useState } from 'react';
 import { Searchbar } from './searchbar/Searchbar';
 import { ImageGallery } from './imageGallery/ImageGallery';
 import { Loader } from './loader/Loader';
@@ -8,30 +8,28 @@ import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchImages } from './Fetch';
 
-export class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    totalPages: 0,
-    error: null,
-    loader: false,
-  };
-  async componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.createMarkup();
-    }
-  }
+export const App =()=> {
+ const [images,setImages]=useState([]);
+ const [query,setQuery]=useState('');
+ const [page,setPage]=useState(1);
+ const [totalPages,setTotalPages]=useState(0);
+ const [loader,setLoader]=useState(false);
 
-  createMarkup = async () => {
-    const { query, page } = this.state;
+ useEffect(()=>{
+  if(query===''){
+    return;
+  }
+  createMarkup()
+},[query,page])
+
+ 
+
+ const createMarkup = async () => {
+    
     const perPage = 12;
 
     try {
-      this.setState({ loader: true });
+      setLoader(true);
 
       const data = await fetchImages(query, page);
       const array = await data.hits.map(
@@ -47,50 +45,46 @@ export class App extends Component {
         });
         return;
       }
-      this.setState(state => ({
-        images: [...state.images, ...array],
-        loader: false,
-        error: '',
-        totalPages: Math.ceil(data.totalHits / perPage),
-      }));
-      console.log(data.hits.length);
-    } catch (error) {
-      this.setState({ error: 'error' }); 
+
+      setImages(prevState=>[...prevState, ...array]);
+      setLoader(false);
+      
+      setTotalPages(Math.ceil(data.totalHits / perPage))
+     
+      } catch (error) {
+      toast.info('oh sorry try again later', {
+          position: toast.POSITION.TOP_CENTER,
+        });
     } finally {
-      this.setState({ loader: false }); 
+      setLoader(false); 
     }
   };
 
-  changeQuery = newQuery => {
-    this.setState({
-      query: `${Date.now()}/${newQuery}`,
-      images: [],
-      page: 1,
-    });
+ const changeQuery = newQuery => {
+    setQuery(`${Date.now()}/${newQuery}`);
+    setImages([]);
+    setPage(1);
   };
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
+ const handleLoadMore = () => setPage(prevState => (prevState + 1));
+  
 
-  render() {
-    const { images, page, totalPages, loader } = this.state;
+  
+    
 
     return (
       <>
         <ToastContainer transition={Slide} />
 
-        <Searchbar changeQuery={this.changeQuery} />
+        <Searchbar changeQuery={changeQuery} />
 
         <ImageGallery images={images} />
 
         {loader && <Loader />}
 
         {images.length > 0 && totalPages !== page && !loader && (
-          <Button loadMore={this.handleLoadMore} />
+          <Button loadMore={handleLoadMore} />
         )}
       </>
     );
   }
-}
+
