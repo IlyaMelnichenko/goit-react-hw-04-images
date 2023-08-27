@@ -35,7 +35,7 @@ export class App extends Component {
 
       const data = await fetchImages(query, page);
       const array = await data.hits.map(
-        ({ id, webformatURL, largeImageURL,previewURL }) => {
+        ({ id, webformatURL, largeImageURL}) => {
           return { id, webformatURL, largeImageURL };
         }
       );
@@ -49,7 +49,7 @@ export class App extends Component {
       }
       this.setState(state => ({
         images: [...state.images, ...array],
-        isLoading: false,
+        loader: false,
         error: '',
         totalPages: Math.ceil(data.totalHits / perPage),
       }));
