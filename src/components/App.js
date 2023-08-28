@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useRef} from 'react';
 import { Searchbar } from './searchbar/Searchbar';
 import { ImageGallery } from './imageGallery/ImageGallery';
 import { Loader } from './loader/Loader';
@@ -21,15 +21,18 @@ export const App = () => {
     setPage(1);
   };
   const handleLoadMore = () => setPage(prevState => prevState + 1);
-
+  const controllerRef=useRef();
   useEffect(() => {
+   
+   
     const createMarkup = async () => {
       const perPage = 12;
-
+     
+      
       try {
         setLoader(true);
 
-        const data = await fetchImages(query, page);
+        const data = await fetchImages(query, page,controllerRef);
         const array = await data.hits.map(
           ({ id, webformatURL, largeImageURL }) => {
             return { id, webformatURL, largeImageURL };
@@ -58,6 +61,7 @@ export const App = () => {
     if (query) {
       createMarkup();
     }
+    
   }, [query, page]);
 
   return (
