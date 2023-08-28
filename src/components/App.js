@@ -17,7 +17,7 @@ export const App = () => {
 
  
 
-  const createMarkup = useCallback(async () => {
+  const createMarkup =useCallback(async () => {
     const perPage = 12;
 
     try {
@@ -48,7 +48,7 @@ export const App = () => {
     } finally {
       setLoader(false);
     }
-  },[query, page])
+  },[page,query]);
 
   const changeQuery = newQuery => {
     setQuery(`${Date.now()}/${newQuery}`);
