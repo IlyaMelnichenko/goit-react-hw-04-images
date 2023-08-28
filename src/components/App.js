@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Searchbar } from './searchbar/Searchbar';
 import { ImageGallery } from './imageGallery/ImageGallery';
 import { Loader } from './loader/Loader';
@@ -15,41 +15,6 @@ export const App = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [loader, setLoader] = useState(false);
 
- 
-
-  const createMarkup =useCallback(async () => {
-    const perPage = 12;
-
-    try {
-      setLoader(true);
-
-      const data = await fetchImages(query, page);
-      const array = await data.hits.map(
-        ({ id, webformatURL, largeImageURL }) => {
-          return { id, webformatURL, largeImageURL };
-        }
-      );
-      if (data.hits.length === 0) {
-        toast.dismiss();
-        toast.info('Image was not found...', {
-          position: toast.POSITION.TOP_CENTER,
-        });
-        return;
-      }
-
-      setImages(prevState => [...prevState, ...array]);
-      setLoader(false);
-
-      setTotalPages(Math.ceil(data.totalHits / perPage));
-    } catch (error) {
-      toast.info('oh sorry try again later', {
-        position: toast.POSITION.TOP_CENTER,
-      });
-    } finally {
-      setLoader(false);
-    }
-  },[page,query]);
-
   const changeQuery = newQuery => {
     setQuery(`${Date.now()}/${newQuery}`);
     setImages([]);
@@ -58,11 +23,42 @@ export const App = () => {
   const handleLoadMore = () => setPage(prevState => prevState + 1);
 
   useEffect(() => {
-    if (query === '') {
-      return;
+    const createMarkup = async () => {
+      const perPage = 12;
+
+      try {
+        setLoader(true);
+
+        const data = await fetchImages(query, page);
+        const array = await data.hits.map(
+          ({ id, webformatURL, largeImageURL }) => {
+            return { id, webformatURL, largeImageURL };
+          }
+        );
+        if (data.hits.length === 0) {
+          toast.dismiss();
+          toast.info('Image was not found...', {
+            position: toast.POSITION.TOP_CENTER,
+          });
+          return;
+        }
+
+        setImages(prevState => [...prevState, ...array]);
+        setLoader(false);
+
+        setTotalPages(Math.ceil(data.totalHits / perPage));
+      } catch (error) {
+        toast.info('oh sorry try again later', {
+          position: toast.POSITION.TOP_CENTER,
+        })
+      } finally {
+        setLoader(false);
+      }
+    };
+    if (query) {
+      createMarkup();
     }
-    createMarkup();
-  }, [query, page,createMarkup]);
+  }, [query, page]);
 
   return (
     <>
